@@ -1,0 +1,59 @@
+statistical analysis CODE:
+
+
+title "Descriptive Statistics for all Country Indicators Group by Countries";
+
+proc means data=PG30.Country_Data Mean Median Mode Std Skew Kurt maxdec=2;
+	*WHERE Country_Name eq 'India';
+	class Country_Name;
+
+	var PGDPTrdinServ TransServ PMercManuExp PMercFoodExp PMercFoodImp 	PMerchFuelExp  PMerchFuelImp P_Exp_GoodServ_AnnualGrowth PMercAgrRawExp 	PGDPMercTrade PGDPGoodSerExp PGDPGoodSerImp PGDPGoodsServExtBal 	InterTour 	PMercManufImp;
+run;
+
+
+
+
+
+
+title "Multiple Regression for India";
+proc reg data=pg30.Country_Indicators_Out_Removed;
+	where Country_Name = 'India';
+	model PGDPMercTrade = PMercManuExp PMercFoodExp;
+run;
+
+
+
+
+
+
+ods graphics / reset=all imagemap;
+proc corr data=corlib.all_out_removed rank
+plots(only)=scatter(nvar=all ellipse=none);
+	where Country_Name eq ‘Canada';
+	var MercExp GoodImp ServImp;
+run;
+
+
+
+title “NetTrade Data using SQL and joins”;
+PROC SQL;
+   CREATE TABLE WORK.NetTrade_AustraliaoutVSCanadaout AS 
+   SELECT q1.Year LABEL=”Year” as Year, 
+                 q1.NetTrade LABEL=”NetTradeAus” AS NetTradeAus,
+         	     q2.NetTrade LABEL=”NetTradeCan” AS NetTradeCan
+                 FROM (SELECT Year, NetTrade from CORLIB.AUSTRALIA_OUT) q1
+                INNER JOIN (SELECT Year, NetTrade from CORLIB.CANADA_OUT) q2 ON (q1.Year = q2.Year);
+QUIT;
+
+title “NetTrade Correlation Between Australia and Canada”;
+ods graphics / reset=all imagemap;
+proc corr data=work.NetTrade_AustraliaoutVSCanadaout rank
+plots(only)=scatter(nvar=all ellipse=none);
+  
+	var NetTradeAus NetTradeCan;
+run;
+
+
+
+
+
